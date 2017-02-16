@@ -42,7 +42,7 @@ int main()
 		{
       for (int j = 0; j < n-1; j++)
       {
-			  double z = 0,5//f(x,y);
+			  double z = f(x,y);
 
         if ((valueZ[j] < z) && (z < valueZ[j+1]))
         {
@@ -51,7 +51,7 @@ int main()
           B[i] = blue[j];
         }
       }
-		i++
+		i++;
 		}
   }
 
@@ -60,11 +60,11 @@ int main()
 //==============================================================================
 double f(double x, double y)
 {
-	return x - y;
-	/*cardio
+//return x - y;
+	
 	#define sqr(x) (x)*(x)
   return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
-	*/
+	
 };
 //==============================================================================
 void fileRead()
@@ -121,8 +121,6 @@ void fileRead()
 	  printf("%d  ", green[i]);
 	  printf("%d\n", blue[i]);
 	}
-	 printf("%d\n", char (a = 250));
-
 
   fclose(fp);
 };
