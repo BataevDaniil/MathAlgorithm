@@ -36,40 +36,43 @@ int main()
   printf("yStep = %lf\n", yStep);
 
 	int i = 0;
-	int index1, index2;
   for (double y = c; y < d; y += yStep)
   {
 		for (double x = a; x < b; x += xStep)
 		{
-			index1 = -1;
-			index2 = -1;
-      for (int j = 0; j < n-1; j++)
+			for (int j = 0; j < n-1; j++)
       {
-			  double zx = f(x - xStep,y);
-			  double zy = f(x,y - yStep);
+			  double z = f(x,y);
 
-        if ((valueZ[j] <= zx) && (zx <= valueZ[j+1]))
-				  {index1 = j;}
-
-        if ((valueZ[j] <= zy) && (zy <= valueZ[j+1]))
-				  {index2 = j;}
-
-				if ((index1 != index2) && (index1 != -1) && (index2 != -1))
-          {R[i] = G[i] = B[i] = 0;}
-      }
+        if ((valueZ[j] <= z) && (z <= valueZ[j+1]))
+        {
+          R[i] = red[j];
+          G[i] = green[j];
+          B[i] = blue[j];
+        }
+		  }
 		i++;
 		}
   }
+
+
+	for (int y = 1; y < h; y++)
+	  for (int x = 1; x < w; x++)
+		  if (R[y*w+x-1] != R[(y-1)*w + x])
+			  if (G[y*w+x-1] != G[(y-1)*w + x])
+				  if (B[y*w+x-1] != B[(y-1)*w + x])
+					  {R[y*w+x] = G[y*w+x] = B[y*w+x] = 0;}
+
 
 	WriteImage("output.bmp",B,G,R);
 };
 //==============================================================================
 double f(double x, double y)
 {
-  //return x - y;
+  return x - y;
 
-	#define sqr(x) (x)*(x)
-  return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
+	//#define sqr(x) (x)*(x)
+  //return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
 
 	//return x*x+y*y;
 	//return x*x+y;
