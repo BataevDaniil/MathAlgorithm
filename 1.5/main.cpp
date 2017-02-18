@@ -55,13 +55,23 @@ int main()
 		}
   }
 
-
+int count = 0;
 	for (int y = 1; y < h; y++)
 	  for (int x = 1; x < w; x++)
-		  if (R[y*w+x-1] != R[(y-1)*w + x])
-			  if (G[y*w+x-1] != G[(y-1)*w + x])
-				  if (B[y*w+x-1] != B[(y-1)*w + x])
-					  {R[y*w+x] = G[y*w+x] = B[y*w+x] = 0;}
+		  if (R[y*w+x] != R[y*w + x-1])
+			  if (G[y*w+x] != G[y*w + x-1])
+				  if (B[y*w+x] != B[y*w + x-1])
+      if (R[y*w+x] != R[(y-1)*w + x])
+			  if (G[y*w+x] != G[(y-1)*w + x])
+				  if (B[y*w+x] != B[(y-1)*w + x])
+					  {R[y*w+x] = G[y*w+x] = B[y*w+x] = 0;count++;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
+						printf("%d\n",count);
 
 
 	WriteImage("output.bmp",B,G,R);
@@ -69,10 +79,10 @@ int main()
 //==============================================================================
 double f(double x, double y)
 {
-  return x - y;
+  //return x - y;
 
-	//#define sqr(x) (x)*(x)
-  //return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
+	#define sqr(x) (x)*(x)
+  return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
 
 	//return x*x+y*y;
 	//return x*x+y;
