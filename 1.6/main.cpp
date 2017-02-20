@@ -11,7 +11,7 @@ double eps;
 #define pi 3.141592;
 //==============================================================================
 double f(double x);
-double f1(double x, int porydok);
+double df(double x);
 void fileRead();
 void ftrash (FILE *fp, int n);
 int remakeColor(int color);
@@ -44,13 +44,34 @@ int main()
     Line(x,f(x));
   }
 
-  double x0 = a;
-  double x1;
-  while(abs(f(x0)) < eps)
-  {
-    x1 = x0 + f(x0)/f1(x1);
+  //поиск решеения f(x) и отрисовка
+  double xk = b;
 
+  SetColor(0,200,0);
+  SetPoint(xk,0);
+  Line(xk, f(xk));
+
+  SetColor(0,0,200);
+  SetPoint(b, df(xk)*(b-xk)+f(xk));
+  Line(a, df(xk)*(a-xk)+f(xk));
+
+  while(fabs(f(xk)) > eps)
+  {
+    xk -= f(xk)/df(xk);
+    //прямы вниз от промежуточных подсчетов
+    SetColor(0,200,0);
+    SetPoint(xk,0);
+    Line(xk, f(xk));
+
+    //касатеьная к промежуточныи подсчетом
+    SetColor(0,0,200);
+    SetPoint(b, df(xk)*(b-xk)+f(xk));
+    Line(a, df(xk)*(a-xk)+f(xk));
   }
+
+  printf("f(xk) = %lf\n", f(xk));
+  printf("xk = %lf\n", xk);
+  printf("eps = %lf\n", eps);
 
   CloseWindow();
 };
@@ -68,20 +89,9 @@ double f(double x)
 	//return x*x - y*y;
 };
 //==============================================================================
-double f1(double x, int porydok)
+double df(double x)
 {
-  int stepen = 5;
-  int k = 1;
-  double xp = 0;
-
-  if (porydok <= stepen)
-  {
-    for (int i = 1; i <= porydok)
-      {k*=i;}
-    xp = pow(x, stepen);
-  }
-
-  return sin(x + pi/2*porydok) + k*xp;
+  return cos(x) + 5*pow(x,4);
 };
 //==============================================================================
 void fileRead()
