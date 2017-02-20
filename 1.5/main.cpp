@@ -40,39 +40,22 @@ int main()
   {
 		for (double x = a; x < b; x += xStep)
 		{
+      double z = f(x,y);
+		  double zx = f(x-xStep, y);
+		  double zy = f(x, y-yStep);
 			for (int j = 0; j < n-1; j++)
       {
-			  double z = f(x,y);
-
-        if ((valueZ[j] <= z) && (z <= valueZ[j+1]))
-        {
-          R[i] = red[j];
-          G[i] = green[j];
-          B[i] = blue[j];
-        }
+        if (((valueZ[j] < zx) && (zx < valueZ[j+1])) != ((valueZ[j] < z) && (z < valueZ[j+1])))
+          if (((valueZ[j] < zy) && (zy < valueZ[j+1])) != ((valueZ[j] < z) && (z < valueZ[j+1])))
+          {
+            R[i] = 0;
+            G[i] = 0;
+            B[i] = 0;
+          }
 		  }
 		i++;
 		}
   }
-
-int count = 0;
-	for (int y = 1; y < h; y++)
-	  for (int x = 1; x < w; x++)
-		  if (R[y*w+x] != R[y*w + x-1])
-			  if (G[y*w+x] != G[y*w + x-1])
-				  if (B[y*w+x] != B[y*w + x-1])
-      if (R[y*w+x] != R[(y-1)*w + x])
-			  if (G[y*w+x] != G[(y-1)*w + x])
-				  if (B[y*w+x] != B[(y-1)*w + x])
-					  {R[y*w+x] = G[y*w+x] = B[y*w+x] = 0;count++;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-					else {R[y*w+x] = G[y*w+x] = B[y*w+x] = 255;}
-						printf("%d\n",count);
-
 
 	WriteImage("output.bmp",B,G,R);
 };
