@@ -1,3 +1,6 @@
 *exe
 *.swp
 *.bmp
+Graph.h
+ReadImage.h
+/task
