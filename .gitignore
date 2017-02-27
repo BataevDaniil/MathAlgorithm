@@ -1,6 +1,10 @@
 *exe
 *.swp
 *.bmp
+*.swn
+*.swo
+*.swm
+*.swp
 Graph.h
 ReadImage.h
 /task
