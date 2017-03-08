@@ -1,4 +1,9 @@
-﻿#include <cstdlib>
+﻿/*
+Рисует линии уравня.
+Тость рисует график функции в 3D где есть ширинa, длина, высота выраженная
+цветом.
+*/
+#include <cstdlib>
 #include <iostream>
 #include <stdio.h>
 #include "ReadImage.h"
@@ -9,7 +14,7 @@ using namespace std;
 int h,w;
 char *R,*G,*B;
 //==============================================================================
-int n;
+int N;
 double a, b, c, d;
 int *red, *green, *blue;
 double *valueZ;
@@ -17,66 +22,62 @@ double *valueZ;
 double f(double x, double y);
 void fileRead();
 void ftrash (FILE *fp, int n);
-int remakeColor(int color);
+
 //==============================================================================
 int main()
 {
-	GetSize("input.bmp", &h, &w);
+  GetSize("input.bmp", &h, &w);
   R = new char[h*w];
   G = new char[h*w];
   B = new char[h*w];
   ReadImageFromFile("input.bmp",B,G,R);
-//==============================================================================
+//------------------------------------------------------------------------------
   fileRead();
-//==============================================================================
+//------------------------------------------------------------------------------
   double xStep = (b - a)/w;
-	double yStep = (d - c)/h;
+  double yStep = (d - c)/h;
 
-	printf("xStep = %lf\n", xStep);
-  printf("yStep = %lf\n", yStep);
-
-	int i = 0;
+  int i = 0;
   for (double y = c; y < d; y += yStep)
   {
-		for (double x = a; x < b; x += xStep)
-		{
+    for (double x = a; x < b; x += xStep)
+    {
       double z = f(x,y);
-		  double zx = f(x-xStep, y);
-		  double zy = f(x, y-yStep);
-			for (int j = 0; j < n-1; j++)
-      {
-        if (((valueZ[j] < zx) && (zx < valueZ[j+1])) != ((valueZ[j] < z) && (z < valueZ[j+1])))
-          if (((valueZ[j] < zy) && (zy < valueZ[j+1])) != ((valueZ[j] < z) && (z < valueZ[j+1])))
-          {
-            R[i] = 0;
-            G[i] = 0;
-            B[i] = 0;
-          }
-		  }
-		i++;
-		}
-  }
+      double zx = f(x-xStep, y);
+      double zy = f(x, y-yStep);
 
-	WriteImage("output.bmp",B,G,R);
+      for (int j = 0; j < N-1; j++)
+      {
+        double a0 = valueZ[j];
+        double a1 = valueZ[j+1];
+        if (((a0 < zx && zx < a1) != (a0 < z && z < a1)) || ((a0 < zy && zy < a1) != (a0 < z && z < a1)))
+          {R[i] = G[i] = B[i] = 0;}
+      }
+    i++;
+    }
+  }
+//------------------------------------------------------------------------------
+  WriteImage("output.bmp",B,G,R);
 };
 //==============================================================================
 double f(double x, double y)
 {
   //return x - y;
 
-	#define sqr(x) (x)*(x)
+  #define sqr(x) (x)*(x)
   return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
 
-	//return x*x+y*y;
-	//return x*x+y;
-	//return x*x - y*y;
+  //return x*x+y*y;
+  //return x*x+y;
+  //return x*x - y*y;
 };
 //==============================================================================
+
 void fileRead()
 {
   FILE *fp;
   fp = fopen ("input.txt", "r");
-
+//------------------------------------------------------------------------------
   ftrash (fp, 3);
   fscanf(fp, "%lf", &a);
 
@@ -90,55 +91,34 @@ void fileRead()
   fscanf(fp, "%lf", &d);
 
   ftrash (fp, 2);
-  fscanf(fp, "%d", &n);
+  fscanf(fp, "%d", &N);
 
-  valueZ = new double[n];
+  valueZ = new double[N];
 
-	red = new int[n];
-	green = new int[n];
-	blue = new int [n];
+  red = new int[N];
+  green = new int[N];
+  blue = new int [N];
 
   ftrash(fp, 1);
-	for (int i = 0; i < n; i++)
-	  {fscanf(fp, "%lf", &valueZ[i]);}
+  for (int i = 0; i < N; i++)
+    {fscanf(fp, "%lf", &valueZ[i]);}
 
-	ftrash(fp, 1);
-	for (int i = 0; i < n; i++)
-	{
-	  fscanf(fp, "%d", &red[i]);
-	  fscanf(fp, "%d", &green[i]);
-	  fscanf(fp, "%d", &blue[i]);
-	}
-
-  printf("n = %d\n", n);
-  printf("a = %lf\n", a);
-  printf("b = %lf\n", b);
-  printf("c = %lf\n", c);
-  printf("d = %lf\n", d);
-
-	for (int i = 0; i < n; i++)
-	  {printf("%lf  ", valueZ[i]);}
-
-  printf("\n");
-	for (int i = 0; i < n; i++)
-	{
-	  printf("%d  ", red[i]);
-	  printf("%d  ", green[i]);
-	  printf("%d\n", blue[i]);
-	}
-
+  ftrash(fp, 1);
+  for (int i = 0; i < N; i++)
+  {
+    fscanf(fp, "%d", &red[i]);
+    fscanf(fp, "%d", &green[i]);
+    fscanf(fp, "%d", &blue[i]);
+  }
+//------------------------------------------------------------------------------
   fclose(fp);
 };
 //==============================================================================
+
 void ftrash (FILE *fp, int n)
 {
   char trash[500];
   for (int i = 0; i < n; i++)
     {fscanf(fp, "%s", trash);}
-};
-//==============================================================================
-int remakeColor(int color)
-{
-	return (color < 0)?(color+=256):(color);
 };
 //==============================================================================

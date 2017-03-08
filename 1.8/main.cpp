@@ -3,13 +3,16 @@
  алгоритма гауса-жардана с выбором глааного элемента.
 */
 #include <stdio.h>
-
+#include <math.h>
+//-----------------------------------------------------------------------------
+#define swap(a,b) a-=b; b+=a; a=b-a;
 //=============================================================================
 void ftrash (FILE *fp, int n);
 void fileRead();
 void writeMatrix(double *x);
 void writeAnswer();
 void writeFile();
+void answerCalculation();
 void faultCalculation();
 
 //=============================================================================
@@ -18,6 +21,7 @@ double *matrix; //одномерный массив для матрицы.
 double *b;
 double *x;
 double *fault;
+bool answer = true;// имеет ли решения СЛAУ
 
 //=============================================================================
 int main()
@@ -28,33 +32,29 @@ int main()
 //-----------------------------------------------------------------------------
   writeMatrix(matrix);
 //-----------------------------------------------------------------------------
+  //первый прохо с верху в низ
   for (int i = 0; i < N-1; i++)
   {
     int indexMaxLine = i;
 
-    for (int j = i+1; j < N; j++) //max a_ii
-      if (matrix[j*N] > matrix[indexMaxLine * N])
-        {indexMaxLine = j;}
+    //нахождение max a_ii
+    for (int j = i+1; j < N; j++)
+        if (fabs(matrix[j*N + i]) > fabs(matrix[indexMaxLine * N + i]))
+          {indexMaxLine = j;}
 
     if (indexMaxLine != i)
-    {  
-      double tmp;
-      for (int j = i; j < N; j++) 
-      {
-        tmp = matrix[i*N + j];
-        matrix[i*N + j] = matrix[indexMaxLine * N  +  j];
-        matrix[indexMaxLine * N  +  j] = tmp;
-      }
-      tmp = b[i];
-      b[i] = b[indexMaxLine];
-      b[indexMaxLine] = tmp; 
+    {
+      for (int j = i; j < N; j++)
+        {swap(matrix[i*N + j],   matrix[indexMaxLine * N  +  j]);}
+      swap(b[i],  b[indexMaxLine]);
     }
-//--------------------------------------------
+    else if (matrix[i*N + i] == 0) {continue;}
 
+//--------------------------------------------
+    //складывает i строку с последующими за ней умножив i строку на cof
     for (int j = i+1; j < N; j++)
     {
       double cof = -matrix[j*N + i]/matrix[i*N + i];
-      //sumLine(matrix, i, j, cof);
 
       for (int k = i; k < N; k++)
         {matrix[j*N + k] += cof*matrix[i*N + k];}
@@ -65,30 +65,43 @@ int main()
 //--------------------------------------------
   writeMatrix(matrix);
 //--------------------------------------------
-  
-  for (int i = N-1; i > 0; i--)
-    for (int j = i; j--;) 
+  //второй проход с низу в верх
+  for (int i = N-1; i >= 0; i--)
+  {
+    if (matrix[i*N + i] == 0)
+      {answer = false;break;}
+
+    for (int j = i-1; j >= 0; j--)//for (int j = i; j--;)
     {
       double cof = -matrix[j*N + i]/matrix[i*N + i];
 
-      for (int k = N-1; k >= j; k--)
+      for (int k = j+1; k < N; k++)
         {matrix[j*N + k] += cof*matrix[i*N + k];}
 
       b[j] += cof*b[i];
     }
+  }
 //-----------------------------------------------------------------------------
   writeMatrix(matrix);
 //-----------------------------------------------------------------------------
-  for (int i = 0; i < N; i++)
-    {x[i] = b[i]/matrix[i*N + i];}
+  if (answer)
+  {
+    answerCalculation();
 //-----------------------------------------------------------------------------
-  faultCalculation();
+    faultCalculation();
 //-----------------------------------------------------------------------------
-  writeAnswer();
-//-----------------------------------------------------------------------------
-  writeMatrix(matrix);
+    writeAnswer();
+  }
+  else printf("Вырожденная матрица\n");
 //-----------------------------------------------------------------------------
   writeFile();
+};
+//=============================================================================
+
+void answerCalculation()
+{
+  for (int i = 0; i < N; i++)
+    {x[i] = b[i]/matrix[i*N + i];}
 };
 //=============================================================================
 
@@ -111,11 +124,10 @@ void faultCalculation()
   for (int i = 0; i < N; i++)
   {
     double sum = 0;
+
     for (int j = 0; j < N; j++)
-    {
-      sum += x[j]*matrix[i*N + j];
-      printf("%lf \n",sum);
-    }
+      {sum += x[j]*matrix[i*N + j];}
+
     fault[i] = sum - b[i];
   }
 };
@@ -137,11 +149,15 @@ void writeFile()
   }
   fprintf(fp, "\n");
 //--------------------------------------------
-for (int i = 0; i < N; i++) 
-    {fprintf(fp, "x[%d] = %lf \n", i, x[i]);}
+  if (answer)
+  {
+    for (int i = 0; i < N; i++)
+      {fprintf(fp, "x[%d] = %lf \n", i, x[i]);}
 //--------------------------------------------
-for (int i = 0; i < N; i++)
-    {fprintf(fp, "fault[%d] = %lf \n", i, fault[i]);}
+     for (int i = 0; i < N; i++)
+       {fprintf(fp, "fault[%d] = %lf \n", i, fault[i]);}
+  }
+  else fprintf(fp, "Вырожденная матрица.\n");
 //-----------------------------------------------------------------------------
   fclose(fp);
 };
@@ -165,7 +181,7 @@ void writeMatrix(double *array)
 
 void writeAnswer()
 {
-  for (int i = 0; i < N; i++) 
+  for (int i = 0; i < N; i++)
     {printf("x[%d] = %lf \n", i, x[i]);}
 //--------------------------------------------
   for (int i = 0; i < N; i++)
@@ -188,6 +204,7 @@ void fileRead()
   for (int i = 0; i < N*N; i++)
     {fscanf(fp, "%lf", &matrix[i]);}
 //--------------------------------------------
+  ftrash (fp, 1);
   for (int i = 0; i < N; i++)
     {fscanf(fp, "%lf", &b[i]);}
 //-----------------------------------------------------------------------------
