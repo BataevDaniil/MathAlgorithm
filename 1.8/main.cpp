@@ -32,7 +32,7 @@ int main()
 //-----------------------------------------------------------------------------
   writeMatrix(matrix);
 //-----------------------------------------------------------------------------
-  //первый прохо с верху в низ
+  //Первый проход с верху в низ
   for (int i = 0; i < N-1; i++)
   {
     int indexMaxLine = i;
@@ -48,8 +48,7 @@ int main()
         {swap(matrix[i*N + j],   matrix[indexMaxLine * N  +  j]);}
       swap(b[i],  b[indexMaxLine]);
     }
-    else if (matrix[i*N + i] == 0) {continue;}
-
+    else if (matrix[i*indexMaxLine + i] == 0) {continue;}
 //--------------------------------------------
     //складывает i строку с последующими за ней умножив i строку на cof
     for (int j = i+1; j < N; j++)
@@ -69,13 +68,13 @@ int main()
   for (int i = N-1; i >= 0; i--)
   {
     if (matrix[i*N + i] == 0)
-      {answer = false;break;}
+      {answer = false; break;}
 
     for (int j = i-1; j >= 0; j--)//for (int j = i; j--;)
     {
       double cof = -matrix[j*N + i]/matrix[i*N + i];
 
-      for (int k = j+1; k < N; k++)
+      for (int k = i; k < N; k++)
         {matrix[j*N + k] += cof*matrix[i*N + k];}
 
       b[j] += cof*b[i];
@@ -114,6 +113,7 @@ void faultCalculation()
   for (int i = 0; i < N*N; i++)
     {fscanf(fp, "%lf", &matrix[i]);}
 //--------------------------------------------
+  ftrash (fp, 1);
   for (int i = 0; i < N; i++)
     {fscanf(fp, "%lf", &b[i]);}
 //--------------------------------------------
@@ -152,10 +152,10 @@ void writeFile()
   if (answer)
   {
     for (int i = 0; i < N; i++)
-      {fprintf(fp, "x[%d] = %lf \n", i, x[i]);}
+      {fprintf(fp, "x[%d] = %.45lf \n", i, x[i]);}
 //--------------------------------------------
      for (int i = 0; i < N; i++)
-       {fprintf(fp, "fault[%d] = %lf \n", i, fault[i]);}
+       {fprintf(fp, "fault[%d] = %.45lf \n", i, fault[i]);}
   }
   else fprintf(fp, "Вырожденная матрица.\n");
 //-----------------------------------------------------------------------------
@@ -182,10 +182,10 @@ void writeMatrix(double *array)
 void writeAnswer()
 {
   for (int i = 0; i < N; i++)
-    {printf("x[%d] = %lf \n", i, x[i]);}
+    {printf("x[%d] = %.40lf \n", i, x[i]);}
 //--------------------------------------------
   for (int i = 0; i < N; i++)
-    {printf("fault[%d] = %lf \n", i, fault[i]);}
+    {printf("fault[%d] = %.40lf \n", i, fault[i]);}
 };
 //=============================================================================
 
