@@ -19,8 +19,9 @@ void writeFile();
 void writeMatrix(double *array, double *b);
 void writeArray(double *array);
 void ftrash (FILE *fp, int n);
-void yakobi(double *matrix, double *b, double*x);
-bool yakobiCheckAnswer(double *matrix);
+void runInterac(double *matrix, double *b, double*x);
+double normal(double *matrix, double *b, double *x);
+double intercParametr(double *matrix, double *b, double *x);
 //==============================================================================
 
 int main()
@@ -39,6 +40,25 @@ int main()
     xyLine(a,0,1,10);
 
 //-----------------------------------------------------------------------------
+    double rk = normal(matrix, b, x);
+//-----------------------------------------------------------------------------
+    SetPoint(a, rk);
+//-----------------------------------------------------------------------------
+    writeMatrix(matrix, b);
+    writeArray(x);
+//-----------------------------------------------------------------------------
+    //проверка на решабильность методом Якоби
+    runInterac(matrix, b, x);//решение
+//-----------------------------------------------------------------------------
+    writeFile();
+//-----------------------------------------------------------------------------
+    CloseWindow();
+};
+//==============================================================================
+
+double normal(double *matrix, double *b, double *x)
+{
+
     double r[N];
     //находим r
     for (int i = 0; i < N; i++)
@@ -56,46 +76,51 @@ int main()
     for (int i = 0; i < N; i++)
         {rk += r[i]*r[i];}
     rk = sqrt(rk);
-//-----------------------------------------------------------------------------
-    SetPoint(a, rk);
-//-----------------------------------------------------------------------------
-    writeMatrix(matrix, b);
-    writeArray(x);
-//-----------------------------------------------------------------------------
-    //проверка на решабильность методом Якоби
-    if (yakobiCheckAnswer(matrix))
-    {yakobi(matrix, b, x);}//решение
-//-----------------------------------------------------------------------------
-    writeFile();
-//-----------------------------------------------------------------------------
-    CloseWindow();
-};
-//==============================================================================
 
-bool yakobiCheckAnswer(double *matrix)
+    return rk;
+}
+//==============================================================================
+double intercParametr(double *matrix, double *b, double *x)
 {
-    bool Yn = true;
+    double rTop=0;
+    double rDown=0;
+    double r[N];
+    //находим r
     for (int i = 0; i < N; i++)
     {
         double sum = 0;
 
         for (int j = 0; j < N; j++)
-        {
-            if (i == j){continue;}
-            sum +=matrix[i*N + j];
-        }
+            {sum += matrix[i*N + j]*x[j];}
 
-        if (sum > matrix[i*N + i])
-            {Yn = false;break;}
+        r[i] = b[i] - sum ;
     }
-    return Yn;
-}
-//==============================================================================
 
-void yakobi(double *matrix, double *b, double*x)
+    for (int i = 0; i < N; i++)
+    {
+        double sum = 0;
+        for (int j = 0; j < N; j++)
+        {
+            sum += matrix[i*N + j] * r[j];
+        }
+        rTop += r[i]*sum;
+    }
+
+    for (int i = 0; i < N; i++)
+    {
+        double sum = 0;
+        for (int j = 0; j < N; j++)
+        {
+            sum += matrix[i*N + j] * r[j];
+        }
+        rDown += sum*sum;
+    }
+    return rTop/rDown;
+}
+
+void runInterac(double *matrix, double *b, double*x)
 {
     double rk;
-    double r[N];
     double x1[N];
     int interac = 1;
     do{
@@ -106,7 +131,6 @@ void yakobi(double *matrix, double *b, double*x)
 
             for (int j = 0; j < N; j++)
             {
-                if (j == i){continue;}
                 sum += matrix[i*N + j] * x[j];
                 //printf("for [%d][%d]\n", i, j);
                 //printf("    matrtix = %lf\n", matrix[i*N + j]);
@@ -114,28 +138,13 @@ void yakobi(double *matrix, double *b, double*x)
                 //printf("    sum = %lf\n\n", sum);
             }
 
-            x1[i] = (b[i] - sum)/matrix[i*N + i];
+            x1[i] = (b[i] - sum)*intercParametr(matrix, b, x) + x[i];
         }
 
         for (int i = 0; i < N; i++)
             {x[i] = x1[i];}
 
-        //находим r^i
-        for (int i = 0; i < N; i++)
-        {
-            double sum = 0;
-
-            for (int j = 0; j < N; j++)
-                {sum += matrix[i*N + j]*x[j];}
-
-            r[i] = sum - b[i];
-        }
-
-        //подсчет нормали
-        rk = 0;
-        for (int i = 0; i < N; i++)
-            {rk += r[i]*r[i];}
-        rk = sqrt(rk);
+        rk = normal(matrix, b, x);
 
         printf("rk = %lf\n", rk);
 
