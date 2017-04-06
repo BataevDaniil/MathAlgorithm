@@ -86,11 +86,11 @@ int main()
   //Метод деления отрезка пополам.
   countInterac = 0;
   double decision;
-  
+
   do
   {
     decision = (b+a)/2;
-		
+
     if (f(decision)*f(b) > 0)
       {b = decision;}
     else {a = decision;}
@@ -98,7 +98,7 @@ int main()
   countInterac++;
   }
   while(fabs(f(decision)) > eps);
-  
+
   fprintf(fp, "2 = %d \n", countInterac);
   fprintf(fp, "половины= %lf \n", f(decision));
 //------------------------------------------------------------------------------
