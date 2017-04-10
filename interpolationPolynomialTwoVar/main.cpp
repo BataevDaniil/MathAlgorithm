@@ -2,22 +2,35 @@
     double xStep = (b - a)/w;
     double yStep = (d - c)/h;
 
-    double count;
+    double xy = 0;
     for (int i = 0; i < nodeYCount-1; i++)
     {
+        if (i != 0)
+            {xy += h*(d - c)/(nodeY[i] - nodeY[i-1]);}
+
         for (int j = 0; j < nodeXCount-1; j++)
         {
-            count = 0;
+            if (j != 0)
+                {xy += w*(b - a)/(nodeX[i] - nodeX[i-1]);}
+
             kfPlane(i, j, 0);
             for (double y = nodeY[i]; y < nodeY[i+1]; y += yStep)
+            {
+                xy += w;
                 for (double x = fLine(i, j, y); x > nodeX[j]; x -= xStep)
-                    {defiColorPoint( count, fPlane(x, y) ); count++;}
+                    {defiColorPoint( xy, fPlane(x, y) ); xy--;}
+            }
 
-            count = 0;
+            if (j != 0)
+                {xy += w*(b - a)/(nodeX[i+1] - nodeX[i]);}
+
             kfPlane(i, j, 1);
             for (double y = nodeY[i]; y < nodeY[i+1]; y += yStep)
+            {
+                xy += w;
                 for (double x = fLine(i, j, y); x < nodeX[j+1]; x += xStep)
-                    {defiColorPoint( count, fPlane(x, y) ); count++;}
+                    {defiColorPoint( xy, fPlane(x, y) ); xy++;}
+            }
         }
     }
 */
@@ -75,10 +88,8 @@ void drawf()
 //------------------------------------------------------------------------------
     double xStep = (b - a)/w;
     double yStep = (d - c)/h;
-
 /*
     int i = 0;
-    kfPlane(0,0, true);
     for (double y = c; y < d; y += yStep)
     {
         for (double x = a; x < b; x += xStep)
@@ -88,24 +99,7 @@ void drawf()
         }
     }
 */
-    double count;
-    for (int i = 0; i < nodeYCount-1; i++)
-    {
-        for (int j = 0; j < nodeXCount-1; j++)
-        {
-            count = 0;
-            kfPlane(i, j, 0);
-            for (double y = nodeY[i]; y < nodeY[i+1]; y += yStep)
-                for (double x = fLine(i, j, y); x > nodeX[j]; x -= xStep)
-                    {defiColorPoint( count, fPlane(x, y) ); count++;}
 
-            count = 0;
-            kfPlane(i, j, 1);
-            for (double y = nodeY[i]; y < nodeY[i+1]; y += yStep)
-                for (double x = fLine(i, j, y); x < nodeX[j+1]; x += xStep)
-                    {defiColorPoint( count, fPlane(x, y) ); count++;}
-        }
-    }
 //------------------------------------------------------------------------------
     CloseWindow("f.bmp");
 };
@@ -113,25 +107,87 @@ void drawf()
 
 void kfPlane(int i, int j, bool Yn)
 {
+    //z = 0*x + 1*y + 1;
     double x1 = nodeX[j];
-    double y1 = nodeX[i+1];
-    double z1 = nodeX[(i+1)*nodeYCount + j];
+    double y1 = nodeY[i+1];
+    double z1 = nodeZ[(i+1)*nodeXCount + j];
 
     double x2 = nodeX[j];
-    double y2 = nodeX[i];
-    double z2 = nodeX[i*nodeYCount + j];
+    double y2 = nodeY[i];
+    double z2 = nodeZ[i*nodeXCount + j];
+
+    if (Yn)
+    {
+        x2 = nodeX[j+1];
+        y2 = nodeY[i+1];
+        z2 = nodeZ[(i+1)*nodeXCount + j+1];
+    }
 
     double x3 = nodeX[j+1];
-    double y3 = nodeX[i];
-    double z3 = nodeX[i*nodeYCount + j+1];
+    double y3 = nodeY[i];
+    double z3 = nodeZ[i*nodeXCount + j+1];
 
-    bPlane = ((x2-x1)*(z3-z1) - (z2-z1)*(x3-x1)) / ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1));
-    aPlane = (z2 - z1 - (y2 - y1)*bPlane) / (x2 - x1);
-    dPlane = z1 - y1*bPlane - x1*aPlane;
+    double a2 = x1;
+    double a3 = y1;
+    double a5 = x2 - x1;
+    double a6 = y2 - y1;
+    double a8 = x3 - x1;
+    double a9 = y3 - y1;
+    double b1 = z1;
+    double b2 = z2 - z1;
+    double b3 = z3 - z1;
 
-    printf("dPlane = %lf\n", dPlane);
-    printf("bPlane = %lf\n", bPlane);
+/*
+    //решение системы Гаусом
+    bPlane = (a5*b3 - b2*a8) / (a9*a5 - a8*a6);
+    aPlane = (b2 - a6*bPlane) / a5;
+    dPlane = b1 - a3*bPlane - a2*aPlane;
+*/
+/*
+    dPlane = ((x2-x1)*(z3-z1) - (z2-z1)*(x3-x1)) / ((x2-x1)*(y3-y1) - (y2-y1)*(x3-x1));
+    bPlane = (z2 - z1 - (y2 - y1)*dPlane) / (x2 - x1);
+    aPlane = z1 - y1*dPlane - x1*bPlane;
+*/
+    //решением системы Крамером
+    double delta = a5*a9 - a6*a8;
+
+    //double delta1 = b1*(a5*a9 - a6*a8) + a2*(a6*b3 - b2*a9) + a3*(b2*a8 - a5*b3);
+
+    double delta2 = b2*a9 - a6*b3;
+
+    double delta3 = a5*b3 - b2*a8;
+
+    double delta1 = b1*delta - a2*delta2 - a3*delta3;
+
+/*
+    printf("delta  = %lf\n", delta);
+    printf("delta1 = %lf\n", delta1);
+    printf("delta2 = %lf\n", delta2);
+    printf("delta3 = %lf\n", delta3);
+    printf("\n");
+*/
+
+    if (delta != 0)
+    {
+        if (delta1 == 0)
+            {dPlane = 0;}
+        else dPlane = delta1 / delta;
+
+        if (delta2 == 0)
+            {aPlane = 0;}
+        else aPlane = delta2 / delta;
+
+        if (delta3 == 0)
+            {bPlane = 0;}
+        else bPlane = delta3 / delta;
+    }
+    else printf("Для плоскости решения нет.\n");
+
+/*
     printf("aPlane = %lf\n", aPlane);
+    printf("bPlane = %lf\n", bPlane);
+    printf("dPlane = %lf\n", dPlane);
+*/
 };
 //==============================================================================
 
@@ -145,6 +201,7 @@ double fLine( int i, int j, double y )
 {
     double x1 = nodeX[j+1];
     double y1 = nodeY[i];
+
     double x2 = nodeX[j];
     double y2 = nodeY[i+1];
 
@@ -220,7 +277,7 @@ void drawfTest()
 
 double fTest(double x, double y)
 {
-    return 2*x + y;
+    return 2*x + y + 0;
 
     //#define sqr(x) (x)*(x)
     //return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
