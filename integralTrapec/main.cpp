@@ -1,4 +1,4 @@
-﻿/*
+/*
 Вычисление интеграла с помощью метода трапеций с его илюстрацией
 */
 #include <stdio.h>
@@ -110,7 +110,7 @@ void writeTerminal()
 
 double f(double x)
 {
-    return exp(x);
+    return x*x*x;
     //return x - y;
 
     //#define sqr(x) (x)*(x)

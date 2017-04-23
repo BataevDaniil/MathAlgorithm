@@ -14,8 +14,7 @@ int nodeXCount;
 int nodeYCount;
 int nodeZCount;
 
-double *ai, *bi, *ci, *di;
-
+double aPlane, bPlane, dPlane;
 //==============================================================================
 void ftrash( FILE *fp, int n );
 
@@ -24,12 +23,13 @@ void writeTerminal();
 
 void fillArrayXYZ();
 double fTest( double x, double y );
-double fCube(double x, int i);
 
 void drawfTest();
 void drawf();
 
-void searchCoefficient();
+void kfPlane( int i, int j, bool Yn );
+double fPlane( double x, double y );
+double fLine( int i, int j, double y );
 void defiColorPoint( int i, double z );
 int location(double x, double y);
 //==============================================================================
@@ -38,11 +38,9 @@ int main()
 {
     fileRead();
     fillArrayXYZ();
-    writeTerminal();
+    //writeTerminal();
 //------------------------------------------------------------------------------
     drawfTest();
-
-    searchCoefficient();
 
     drawf();
 };
@@ -53,16 +51,28 @@ void drawf()
 
     ReadWindow("input.bmp", a,b,c,d);
 //------------------------------------------------------------------------------
+    #define residual 0.001
+
     double xStep = (b - a)/w;
     double yStep = (d - c)/h;
 
-    int i = 0;
-    for (int y = c; y < d; y += yStep)
+    for (int i = 0; i < nodeYCount-1; i++)
     {
-        for (int x = a; x < b; x += xStep)
+        for (int j = 0; j < nodeXCount-1; j++)
         {
-            defiColorPoint(0, i);
-            i++;
+            kfPlane(i, j, false);
+            for (double y = nodeY[i]; y <= nodeY[i+1] + residual; y += yStep)
+            {
+                for (double x = fLine(i, j, y); x >= nodeX[j] - residual; x -= xStep)
+                    {defiColorPoint( location( x,y ), fPlane(x, y) );}
+            }
+
+            kfPlane(i, j, true);
+            for (double y = nodeY[i]; y <= nodeY[i+1] + residual; y += yStep)
+            {
+                for (double x = fLine(i, j, y); x <= nodeX[j+1] + residual; x += xStep)
+                    {defiColorPoint( location( x,y ), fPlane(x, y) );}
+            }
         }
     }
 /*
@@ -116,13 +126,6 @@ void drawf()
 };
 //==============================================================================
 
-double fCube(double x, int i)
-{
-    double xi = nodeY[i];
-    return ai[i]*pow(x - xi, 3) + bi[i]*pow(x - xi, 2) + ci[i]*(x - xi) + di[i];
-};
-//==============================================================================
-
 int location(double x, double y)
 {
     double xStep = (b - a)/w;
@@ -140,6 +143,91 @@ int location(double x, double y)
 };
 //==============================================================================
 
+void kfPlane(int i, int j, bool Yn)
+{
+    //z = 0*x + 1*y + 1;
+    double x1 = nodeX[j];
+    double y1 = nodeY[i+1];
+    double z1 = nodeZ[(i+1)*nodeXCount + j];
+
+    double x2 = nodeX[j];
+    double y2 = nodeY[i];
+    double z2 = nodeZ[i*nodeXCount + j];
+
+    if (Yn)
+    {
+        x2 = nodeX[j+1];
+        y2 = nodeY[i+1];
+        z2 = nodeZ[(i+1)*nodeXCount + j+1];
+    }
+
+    double x3 = nodeX[j+1];
+    double y3 = nodeY[i];
+    double z3 = nodeZ[i*nodeXCount + j+1];
+
+    double a2 = x1;
+    double a3 = y1;
+    double a5 = x2 - x1;
+    double a6 = y2 - y1;
+    double a8 = x3 - x1;
+    double a9 = y3 - y1;
+    double b1 = z1;
+    double b2 = z2 - z1;
+    double b3 = z3 - z1;
+
+    //решением системы Крамером
+    double delta = a5*a9 - a6*a8;
+
+    double delta2 = b2*a9 - a6*b3;
+
+    double delta3 = a5*b3 - b2*a8;
+
+    double delta1 = b1*delta - a2*delta2 - a3*delta3;
+
+/*
+    printf("delta  = %lf\n", delta);
+    printf("delta1 = %lf\n", delta1);
+    printf("delta2 = %lf\n", delta2);
+    printf("delta3 = %lf\n", delta3);
+    printf("\n");
+*/
+
+    if (delta != 0)
+    {
+        dPlane = delta1 / delta;
+
+        aPlane = delta2 / delta;
+
+        bPlane = delta3 / delta;
+    }
+    else printf("Для плоскости решения нет.\n");
+
+/*
+    printf("aPlane = %lf\n", aPlane);
+    printf("bPlane = %lf\n", bPlane);
+    printf("dPlane = %lf\n", dPlane);
+*/
+};
+//==============================================================================
+
+double fPlane(double x, double y)
+{
+    return aPlane*x + bPlane*y + dPlane;
+};
+//==============================================================================
+
+double fLine( int i, int j, double y )
+{
+    double x1 = nodeX[j+1];
+    double y1 = nodeY[i];
+
+    double x2 = nodeX[j];
+    double y2 = nodeY[i+1];
+
+    return (y - y1)*(x2 - x1)/(y2 - y1) + x1;
+};
+//==============================================================================
+
 void defiColorPoint(int i, double z)
 {
     for (int j = 0; j < countPointInterval-1; j++)
@@ -152,58 +240,6 @@ void defiColorPoint(int i, double z)
         }
     }
 
-};
-//==============================================================================
-
-void searchCoefficient()
-{
-    di = new double[nodeXCount-1];
-    for (int i = 0; i < nodeXcount; i++)
-    {
-        di = nodeYCount;
-    }
-
-    ci = new double[nodeXCount-1];
-    ci[0] = (nodeZ[1] - nodeZ[0]) \ (nodeY[1] - nodeY[0]);
-    ci[1] = (nodeZ[nodeXcount*nodeYCount-1] - nodeZ[nodeXcount*nodeYCount-2]) \ (nodeY[nodeYCount-1] - nodeY[nodeYCount-1]);
-    for (int i = 1; i < nodeXCount-1; i++)
-    {
-        double f2 = nodeValue[i+1];
-        double f1 = nodeValue[i];
-        double f0 = nodeValue[i-1];
-
-        if ((f1 > f0 && f1 > f2) || (f1 < f0 && f1 < f2))
-        {
-            dNodeValue[i] = 0;
-        }
-        else{
-            double x1 = node[i+1];
-            double x0 = node[i-1];
-
-            dNodeValue[i] = (f2-f0)/(x1-x0);
-            }
-    }
-
-    ai = new double[nodeXCount-1];
-    bi = new double[nodeXCount-1];
-    for (int i = 0; i < nodeXCount-1; i++)
-    {
-        double h = nodeY[i+1] - nodeY[i];
-        double f = di[i];
-        double f1 = di[i+1];
-        double df = ci[i];
-        double df1 = ci[i+1];
-
-        double a1 = pow(h,3);
-        double a2 = h*h;
-        double a3 = 3*h*h;
-        double a4 = 2*h;
-        double b1 = f1 - df*h - f;
-        double b2 = df1 - df;
-
-        bi[i] = (b2*a1 - b1*a3)/(a4*a1 - a3*a2);
-        ai[i] = (b1 - a2*bi[i])/a1;
-    }
 };
 //==============================================================================
 

@@ -19,18 +19,22 @@ double *nodeValue;
 double *dNodeValue;
 double Nx = 1, Ny = 1;
 //==============================================================================
+void wirteTerminal();
+void fillArrayXY();
+
 double fMain(double x);
 double fLograng(double x);
+double fCube(double x, int i);
+
 void readScaleFile();
-void fillArrayXY();
-void ftrash (FILE *fp, int n);
 void drawCoordinat();
+void searchCoefficient();
+
 void drawfMain();
 void drawfLograng();
-double fCube(double x, int i);
-void searchCoefficient();
 void drawfCube();
-void wirteTerminal();
+
+void ftrash (FILE *fp, int n);
 //==============================================================================
 
 int main()
@@ -227,7 +231,7 @@ void fillArrayXY()
 
     double xStep = (b - a)/(nodeCount-1);
     double x = a;
-//------------------------------------------------------------------------------
+
     for (int i = 0; i < nodeCount; i++)
     {
         node[i] = x;
@@ -253,7 +257,7 @@ void fillArrayXY()
             double x0 = node[i-1];
 
             dNodeValue[i] = (f2-f0)/(x1-x0);
-          }
+            }
     }
 
 };
