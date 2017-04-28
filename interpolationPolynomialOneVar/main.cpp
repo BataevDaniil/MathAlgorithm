@@ -3,13 +3,12 @@
 интрополяционого полинома Логранжа.
 */
 
-#include <cstdlib>
-#include <iostream>
 #include <stdio.h>
 #include "Graph.h"
 #include <math.h>
 
 using namespace std;
+#define sqr(x) (x)*(x)
 //==============================================================================
 double a, b, c, d;
 double *ai, *bi;
@@ -97,9 +96,9 @@ void searchCoefficient()
             double df = dNodeY[i];
             double df1 = dNodeY[i+1];
 
-            double a1 = h*h*h;
-            double a2 = h*h;
-            double a3 = 3*h*h;
+            double a1 = pow(h,3);
+            double a2 = sqr(h);
+            double a3 = 3*sqr(h);
             double a4 = 2*h;
             double b1 = f1 - df*h - f;
             double b2 = df1 - df;
