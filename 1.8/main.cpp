@@ -26,195 +26,195 @@ bool answer = true;// имеет ли решения СЛAУ
 //=============================================================================
 int main()
 {
-  fileRead();
+      fileRead();
 //-----------------------------------------------------------------------------
-  x = new double[N];
+      x = new double[N];
 //-----------------------------------------------------------------------------
-  writeMatrix(matrix);
+      writeMatrix(matrix);
 //-----------------------------------------------------------------------------
-  //Первый проход с верху в низ
-  for (int i = 0; i < N-1; i++)
-  {
-    int indexMaxLine = i;
+      //Первый проход с верху в низ
+      for (int i = 0; i < N-1; i++)
+      {
+            int indexMaxLine = i;
 
-    //нахождение max a_ii
-    for (int j = i+1; j < N; j++)
-        if (fabs(matrix[j*N + i]) > fabs(matrix[indexMaxLine * N + i]))
-          {indexMaxLine = j;}
+            //нахождение max a_ii
+            for (int j = i+1; j < N; j++)
+                        if (fabs(matrix[j*N + i]) > fabs(matrix[indexMaxLine * N + i]))
+                              {indexMaxLine = j;}
 
-    if (indexMaxLine != i)
-    {
-      for (int j = i; j < N; j++)
-        {swap(matrix[i*N + j],   matrix[indexMaxLine * N  +  j]);}
-      swap(b[i],  b[indexMaxLine]);
-    }
-    else if (matrix[i*indexMaxLine + i] == 0) {continue;}
+            if (indexMaxLine != i)
+            {
+                  for (int j = i; j < N; j++)
+                        {swap(matrix[i*N + j],   matrix[indexMaxLine * N  +  j]);}
+                  swap(b[i],  b[indexMaxLine]);
+            }
+            else if (matrix[i*indexMaxLine + i] == 0) {continue;}
 //--------------------------------------------
-    //складывает i строку с последующими за ней умножив i строку на cof
-    for (int j = i+1; j < N; j++)
-    {
-      double cof = -matrix[j*N + i]/matrix[i*N + i];
+            //складывает i строку с последующими за ней умножив i строку на cof
+            for (int j = i+1; j < N; j++)
+            {
+                  double cof = -matrix[j*N + i]/matrix[i*N + i];
 
-      for (int k = i; k < N; k++)
-        {matrix[j*N + k] += cof*matrix[i*N + k];}
+                  for (int k = i; k < N; k++)
+                        {matrix[j*N + k] += cof*matrix[i*N + k];}
 
-      b[j] += cof*b[i];
-    }
-  }
+                  b[j] += cof*b[i];
+            }
+      }
 //--------------------------------------------
-  writeMatrix(matrix);
+      writeMatrix(matrix);
 //--------------------------------------------
-  //второй проход с низу в верх
-  for (int i = N-1; i >= 0; i--)
-  {
-    if (matrix[i*N + i] == 0)
-      {answer = false; break;}
+      //второй проход с низу в верх
+      for (int i = N-1; i >= 0; i--)
+      {
+            if (matrix[i*N + i] == 0)
+                  {answer = false; break;}
 
-    for (int j = i-1; j >= 0; j--)//for (int j = i; j--;)
-    {
-      double cof = -matrix[j*N + i]/matrix[i*N + i];
+            for (int j = i-1; j >= 0; j--)//for (int j = i; j--;)
+            {
+                  double cof = -matrix[j*N + i]/matrix[i*N + i];
 
-      for (int k = i; k < N; k++)
-        {matrix[j*N + k] += cof*matrix[i*N + k];}
+                  for (int k = i; k < N; k++)
+                        {matrix[j*N + k] += cof*matrix[i*N + k];}
 
-      b[j] += cof*b[i];
-    }
-  }
+                  b[j] += cof*b[i];
+            }
+      }
 //-----------------------------------------------------------------------------
-  writeMatrix(matrix);
+      writeMatrix(matrix);
 //-----------------------------------------------------------------------------
-  if (answer)
-  {
-    answerCalculation();
+      if (answer)
+      {
+            answerCalculation();
 //-----------------------------------------------------------------------------
-    faultCalculation();
+            faultCalculation();
 //-----------------------------------------------------------------------------
-    writeAnswer();
-  }
-  else printf("Вырожденная матрица\n");
+            writeAnswer();
+      }
+      else printf("Вырожденная матрица\n");
 //-----------------------------------------------------------------------------
-  writeFile();
+      writeFile();
 };
 //=============================================================================
 
 void answerCalculation()
 {
-  for (int i = 0; i < N; i++)
-    {x[i] = b[i]/matrix[i*N + i];}
+      for (int i = 0; i < N; i++)
+            {x[i] = b[i]/matrix[i*N + i];}
 };
 //=============================================================================
 
 void faultCalculation()
 {
-  FILE *fp;
-  fp = fopen ("matrix.txt", "r");
+      FILE *fp;
+      fp = fopen ("matrix.txt", "r");
 //--------------------------------------------
-  ftrash (fp, 5);
-  for (int i = 0; i < N*N; i++)
-    {fscanf(fp, "%lf", &matrix[i]);}
+      ftrash (fp, 5);
+      for (int i = 0; i < N*N; i++)
+            {fscanf(fp, "%lf", &matrix[i]);}
 //--------------------------------------------
-  ftrash (fp, 1);
-  for (int i = 0; i < N; i++)
-    {fscanf(fp, "%lf", &b[i]);}
+      ftrash (fp, 1);
+      for (int i = 0; i < N; i++)
+            {fscanf(fp, "%lf", &b[i]);}
 //--------------------------------------------
-  fclose(fp);
+      fclose(fp);
 //-----------------------------------------------------------------------------
-  fault = new double[N];
+      fault = new double[N];
 
-  for (int i = 0; i < N; i++)
-  {
-    double sum = 0;
+      for (int i = 0; i < N; i++)
+      {
+            double sum = 0;
 
-    for (int j = 0; j < N; j++)
-      {sum += x[j]*matrix[i*N + j];}
+            for (int j = 0; j < N; j++)
+                  {sum += x[j]*matrix[i*N + j];}
 
-    fault[i] = sum - b[i];
-  }
+            fault[i] = sum - b[i];
+      }
 };
 //=============================================================================
 
 void writeFile()
 {
-  FILE *fp;
-  fp = fopen ("answer.txt", "w");
+      FILE *fp;
+      fp = fopen ("answer.txt", "w");
 //-----------------------------------------------------------------------------
-  fprintf(fp, "N = %d \n", N);
+      fprintf(fp, "N = %d \n", N);
 //--------------------------------------------
-  for (int i = 0; i < N; i++)
-  {
-    for (int j = 0; j < N; j++)
-      {fprintf(fp, "%4.2lf  ", matrix[i*N+j]);}
+      for (int i = 0; i < N; i++)
+      {
+            for (int j = 0; j < N; j++)
+                  {fprintf(fp, "%4.2lf  ", matrix[i*N+j]);}
 
-    fprintf(fp, "%4.2lf \n", b[i]);
-  }
-  fprintf(fp, "\n");
+            fprintf(fp, "%4.2lf \n", b[i]);
+      }
+      fprintf(fp, "\n");
 //--------------------------------------------
-  if (answer)
-  {
-    for (int i = 0; i < N; i++)
-      {fprintf(fp, "x[%d] = %.45lf \n", i, x[i]);}
+      if (answer)
+      {
+            for (int i = 0; i < N; i++)
+                  {fprintf(fp, "x[%d] = %.45lf \n", i, x[i]);}
 //--------------------------------------------
-     for (int i = 0; i < N; i++)
-       {fprintf(fp, "fault[%d] = %.45lf \n", i, fault[i]);}
-  }
-  else fprintf(fp, "Вырожденная матрица.\n");
+             for (int i = 0; i < N; i++)
+                   {fprintf(fp, "fault[%d] = %.45lf \n", i, fault[i]);}
+      }
+      else fprintf(fp, "Вырожденная матрица.\n");
 //-----------------------------------------------------------------------------
-  fclose(fp);
+      fclose(fp);
 };
 //=============================================================================
 
 void writeMatrix(double *array)
 {
-  printf("\n");
-  printf("N = %d \n", N);
+      printf("\n");
+      printf("N = %d \n", N);
 
-  for (int i = 0; i < N; i++)
-  {
-    for (int j = 0; j < N; j++)
-      {printf("%4.2lf  ", array[i*N+j]);}
+      for (int i = 0; i < N; i++)
+      {
+            for (int j = 0; j < N; j++)
+                  {printf("%4.2lf  ", array[i*N+j]);}
 
-    printf("   %lf \n", b[i]);
-  }
-  printf("\n");
+            printf("   %lf \n", b[i]);
+      }
+      printf("\n");
 };
 //=============================================================================
 
 void writeAnswer()
 {
-  for (int i = 0; i < N; i++)
-    {printf("x[%d] = %.40lf \n", i, x[i]);}
+      for (int i = 0; i < N; i++)
+            {printf("x[%d] = %.40lf \n", i, x[i]);}
 //--------------------------------------------
-  for (int i = 0; i < N; i++)
-    {printf("fault[%d] = %.40lf \n", i, fault[i]);}
+      for (int i = 0; i < N; i++)
+            {printf("fault[%d] = %.40lf \n", i, fault[i]);}
 };
 //=============================================================================
 
 void fileRead()
 {
-  FILE *fp;
-  fp = fopen ("matrix.txt", "r");
+      FILE *fp;
+      fp = fopen ("matrix.txt", "r");
 //-----------------------------------------------------------------------------
-  ftrash (fp, 3);
-  fscanf(fp, "%d", &N);
+      ftrash (fp, 3);
+      fscanf(fp, "%d", &N);
 //--------------------------------------------
-  matrix = new double[N*N];
-  b = new double[N];
+      matrix = new double[N*N];
+      b = new double[N];
 //--------------------------------------------
-  ftrash (fp, 1);
-  for (int i = 0; i < N*N; i++)
-    {fscanf(fp, "%lf", &matrix[i]);}
+      ftrash (fp, 1);
+      for (int i = 0; i < N*N; i++)
+            {fscanf(fp, "%lf", &matrix[i]);}
 //--------------------------------------------
-  ftrash (fp, 1);
-  for (int i = 0; i < N; i++)
-    {fscanf(fp, "%lf", &b[i]);}
+      ftrash (fp, 1);
+      for (int i = 0; i < N; i++)
+            {fscanf(fp, "%lf", &b[i]);}
 //-----------------------------------------------------------------------------
-  fclose(fp);
+      fclose(fp);
 };
 //=============================================================================
 
 void ftrash (FILE *fp, int n)
 {
-  char trash[500];
-  for (int i = n; i--;)
-    {fscanf(fp, "%s", trash);}
+      char trash[500];
+      for (int i = n; i--;)
+            {fscanf(fp, "%s", trash);}
 };

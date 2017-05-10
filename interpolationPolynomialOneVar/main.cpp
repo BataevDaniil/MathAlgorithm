@@ -146,7 +146,9 @@ void wirteTerminal()
 
 double fMain(double x)
 {
-  return exp(-50*x*x);
+  return x*x;
+
+  //return exp(-50*x*x);
 //---------------------------------------------------
   //return sin(x);
 //---------------------------------------------------

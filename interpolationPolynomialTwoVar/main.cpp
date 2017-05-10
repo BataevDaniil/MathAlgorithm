@@ -36,9 +36,10 @@ void drawf();
 
 void coefficientMainf();
 void coefficientTempMainf(int j, double y);
-double fTemp( int i, double x, double y );
+double fTemp( int i, double x);
 
 void fTestOneVar();
+void fTempOneVar();
 
 void defiColorPoint( int i, double z );
 int location( double x, double y );
@@ -48,31 +49,58 @@ int main()
 {
       fileRead();
       fillArrayXYZ();
-      //writeTerminal();
 //------------------------------------------------------------------------------
-      //drawfTest();
+      drawfTest();
 
       coefficientMainf();
 
-      //fTestOneVar();
+      fTestOneVar();
 
       drawf();
+
+      //writeTerminal();
 };
 //==============================================================================
-
-void fTestOneVar()
+void fTempOneVar()
 {
-      SetColor(250,250,250);
-      SetWindow(a,b,c,d);
-
-      SetColor(0,0,0);
-      xyLine(0,0,1,1);
-//------------------------------------------------------------------------------
       SetColor(0,255,0);
 
       int delPlot = 100;
 
-      for (int i = 0; i < nodeYCount-1; i++)
+      for (int i = 0; i < nodeXCount-1; i++)
+      {
+            double xStep = (nodeX[i+1] - nodeX[i]) / delPlot;
+
+            double x = nodeX[i];
+
+            SetPoint(x, diTemp[i]);
+            for (int j = 0; j < delPlot; j++)
+            {
+                  x += xStep;
+
+                  double a1 = aiTemp[i]*pow(x - nodeX[i], 3);
+                  double b1 = biTemp[i]*pow(x - nodeX[i], 2);
+                  double c1 = ciTemp[i]*(x - nodeX[i]);
+                  double d1 = diTemp[i];
+
+                  double z = a1 + b1 + c1 + d1;
+
+                  Line(x, z);
+            }
+      }
+//------------------------------------------------------------------------------
+      CloseWindow("fTempOneVar.bmp");
+};
+
+void fTestOneVar()
+{
+      SetColor(0,255,0);
+
+      int delPlot = 10;
+
+      #define numberPlot 1
+
+      for (int i = 0; i < 0;i++)//nodeYCount-1; i++)
       {
             double yStep = (nodeY[i+1] - nodeY[i]) / delPlot;
 
@@ -106,10 +134,10 @@ void drawf()
       double xStep = (b - a)/w;
       double yStep = (d - c)/h;
 
-      aiTemp = new double[nodeXCount];
-      biTemp = new double[nodeXCount];
-      ciTemp = new double[nodeXCount];
-      diTemp = new double[nodeXCount];
+      aiTemp = new double[nodeXCount-1];
+      biTemp = new double[nodeXCount-1];
+      ciTemp = new double[nodeXCount-1];
+      diTemp = new double[nodeXCount-1];
 
       int xY = 0;
       int i=0;
@@ -121,18 +149,21 @@ void drawf()
 
             coefficientTempMainf(i, y);
 
+            if (y == nodeY[1]-yStep*10)
+                  {fTempOneVar();}
+
             j = 0;
             for (double x = a; x < b; x+=xStep)
             {
                   if (x > nodeX[j+1])
                         {j++;}
 
-                  defiColorPoint( xY, fTemp( j, x, y ) );
+                  defiColorPoint( xY, fTemp( j, x ) );
                   xY++;
             }
       }
 
-      //grideInNodeXY();
+      grideInNodeXY();
 //------------------------------------------------------------------------------
       CloseWindow("f.bmp");
 };
@@ -141,28 +172,30 @@ void drawf()
 void coefficientTempMainf(int j, double y)
 {
       double nodeZTemp[nodeXCount];
+      double df[nodeXCount];
+
       for (int i = 0; i < nodeXCount; i++)
       {
-            double a = ai[i*nodeYCount + j];
-            double b = bi[i*nodeYCount + j];
-            double c = ci[i*nodeYCount + j];
-            double d = di[i*nodeYCount + j];
+            double a = ai[i*(nodeYCount-1) + j];
+            double b = bi[i*(nodeYCount-1) + j];
+            double c = ci[i*(nodeYCount-1) + j];
+            double d = di[i*(nodeYCount-1) + j];
 
-            nodeZTemp[i] = a*pow(y - nodeY[j], 3) + b*pow(y - nodeY[j], 2) + c*(y - nodeY[j]) + d;
+            nodeZTemp[i] = a*pow(y - nodeY[j], 3) + b*sqr(y - nodeY[j]) + c*(y - nodeY[j]) + d;
       }
 
       {
-            double deltaZ = nodeZTemp[1] + nodeZTemp[0];
+            double deltaZ = nodeZTemp[1] - nodeZTemp[0];
             double deltaX = nodeX[1] - nodeX[0];
 
-            ciTemp[0] = deltaZ / deltaX;
+            df[0] = deltaZ / deltaX;
       }
 
       {
             double deltaZ = nodeZTemp[nodeXCount-1] - nodeZTemp[nodeXCount-2];
             double deltaX = nodeX[nodeXCount - 1] - nodeX[nodeXCount - 2];
 
-            ciTemp[nodeXCount-1] = deltaZ / deltaX;
+            df[nodeXCount-1] = deltaZ / deltaX;
       }
 
       for (int i = 1; i < nodeXCount-1; i++)
@@ -173,14 +206,14 @@ void coefficientTempMainf(int j, double y)
 
             if ((f1 > f0 && f1 > f2) || (f1 < f0 && f1 < f2))
             {
-                  ciTemp[i] = 0;
+                  df[i] = 0;
             }
             else
             {
                   double y1 = nodeX[i+1];
                   double y0 = nodeX[i-1];
 
-                  ciTemp[i] = (f2-f0) / (y1-y0);
+                  df[i] = (f2-f0) / (y1-y0);
             }
       }
 
@@ -191,19 +224,20 @@ void coefficientTempMainf(int j, double y)
             double f = nodeZTemp[i];
             double f1 = nodeZTemp[i+1];
 
-            double df = ciTemp[i];
-            double df1 = ciTemp[i+1];
+            double df0 = df[i];
+            double df1 = df[i+1];
 
             double a1 = pow(h,3);
             double a2 = sqr(h);
             double a3 = 3*sqr(h);
             double a4 = 2*h;
-            double b1 = f1 - df*h - f;
-            double b2 = df1 - df;
+            double b1 = f1 - df0*h - f;
+            double b2 = df1 - df0;
 
             biTemp[i] = (b2*a1 - b1*a3) / (a4*a1 - a3*a2);
             aiTemp[i] = (b1 - a2*biTemp[i]) / a1;
-            diTemp[i] = nodeZTemp[i];
+            ciTemp[i] = df0;
+            diTemp[i] = f;
       }
 };
 //==============================================================================
@@ -240,10 +274,10 @@ void defiColorPoint(int i, double z)
 };
 //==============================================================================
 
-double fTemp( int i, double x, double y )
+double fTemp( int i, double x )
 {
       double a = aiTemp[i]*pow(x - nodeX[i], 3);
-      double b = biTemp[i]*pow(x - nodeX[i], 2);
+      double b = biTemp[i]*sqr(x - nodeX[i]);
       double c = ciTemp[i]*(x - nodeX[i]);
       double d = diTemp[i];
 
@@ -255,25 +289,27 @@ double fTemp( int i, double x, double y )
 
 void coefficientMainf()
 {
-      ai = new double[nodeYCount*nodeXCount];
-      bi = new double[nodeYCount*nodeXCount];
-      ci = new double[nodeYCount*nodeXCount];
-      di = new double[nodeYCount*nodeXCount];
+      ai = new double[(nodeYCount-1)*nodeXCount];
+      bi = new double[(nodeYCount-1)*nodeXCount];
+      ci = new double[(nodeYCount-1)*nodeXCount];
+      di = new double[(nodeYCount-1)*nodeXCount];
+
+      double df[nodeYCount*nodeXCount];
 
       for (int i = 0; i < nodeXCount; i++)
       {
             {
-                  double deltaZ = nodeZ[i + nodeXCount] + nodeZ[i];
+                  double deltaZ = nodeZ[i + nodeXCount] - nodeZ[i];
                   double deltaY = nodeY[1] - nodeY[0];
 
-                  ci[i*nodeYCount] = deltaZ / deltaY;
+                  df[i*nodeYCount] = deltaZ / deltaY;
             }
 
             {
                   double deltaZ = nodeZ[i + nodeXCount*(nodeYCount - 1)] - nodeZ[i + nodeXCount*(nodeYCount - 2)];
                   double deltaY = nodeY[nodeYCount - 1] - nodeY[nodeYCount - 2];
 
-                  ci[i + nodeXCount*(nodeYCount - 1)] = deltaZ / deltaY;
+                  df[(i+1)*nodeYCount-1] = deltaZ / deltaY;
             }
 
             for (int j = 1; j < nodeYCount-1; j++)
@@ -284,14 +320,14 @@ void coefficientMainf()
 
                   if ((f1 > f0 && f1 > f2) || (f1 < f0 && f1 < f2))
                   {
-                        ci[i*nodeYCount + j] = 0;
+                        df[i*nodeYCount + j] = 0;
                   }
                   else
                   {
                         double y1 = nodeY[j+1];
                         double y0 = nodeY[j-1];
 
-                        ci[i*nodeYCount + j] = (f2-f0) / (y1-y0);
+                        df[i*nodeYCount + j] = (f2-f0) / (y1-y0);
                   }
             }
       }
@@ -305,19 +341,20 @@ void coefficientMainf()
                   double f = nodeZ[i + j*nodeXCount];
                   double f1 = nodeZ[i + (j+1)*nodeXCount];
 
-                  double df = ci[i*nodeYCount + j];
-                  double df1 = ci[i*nodeYCount + j+1];
+                  double df0 = df[i*nodeYCount + j];
+                  double df1 = df[i*nodeYCount + j+1];
 
                   double a1 = pow(h,3);
                   double a2 = sqr(h);
                   double a3 = 3*sqr(h);
                   double a4 = 2*h;
-                  double b1 = f1 - df*h - f;
-                  double b2 = df1 - df;
+                  double b1 = f1 - df0*h - f;
+                  double b2 = df1 - df0;
 
-                  bi[i*nodeYCount + j] = (b2*a1 - b1*a3) / (a4*a1 - a3*a2);
-                  ai[i*nodeYCount + j] = (b1 - a2*bi[i*nodeYCount + j]) / a1;
-                  di[i*nodeYCount + j] = nodeZ[i + j*nodeXCount];
+                  bi[i*(nodeYCount-1) + j] = (b2*a1 - b1*a3) / (a4*a1 - a3*a2);
+                  ai[i*(nodeYCount-1) + j] = (b1 - a2*bi[i*(nodeYCount-1) + j]) / a1;
+                  ci[i*(nodeYCount-1) + j] = df0;
+                  di[i*(nodeYCount-1) + j] = f;
             }
       }
 };
@@ -373,7 +410,7 @@ void drawfTest()
             }
       }
 
-      grideInNodeXY();
+      //grideInNodeXY();
 //------------------------------------------------------------------------------
       CloseWindow("fTest.bmp");
 
@@ -384,10 +421,11 @@ double fTest(double x, double y)
 {
       //return x + y;
 
-      //#define sqr(x) (x)*(x)
-      return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
+      #define sqr(x) (x)*(x)
+      return (x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
 
-      //return x*x + y;
+      //return x + y*y;
+      //return y*y;
       //return x*x + y;
       //return x*x - y*y;
 };
@@ -472,6 +510,21 @@ void writeTerminal()
             }
             printf("\n");
       }
+
+/*
+      for (int i = 0; i < nodeXCount; i++)
+      {
+            for (int j = 0; j < nodeYCount; j++)
+            {
+                  printf("ai = %5.2lf  ", ai[i*nodeYCount + j]);
+                  printf("bi = %5.2lf  ", bi[i*nodeYCount + j]);
+                  printf("ci = %5.2lf  ", ci[i*nodeYCount + j]);
+                  printf("di = %5.2lf  ", di[i*nodeYCount + j]);
+
+                  printf("\n");
+            }
+      }
+*/
 
 /*
       for (int i = 0; i < countPointInterval; i++)
