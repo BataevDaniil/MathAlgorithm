@@ -61,7 +61,7 @@ int main()
 
       drawMapGreenland();
 
-      //writeTerminal();
+      writeTerminal();
 };
 //==============================================================================
 
@@ -71,11 +71,11 @@ void lineLevel()
             for (int j = 1; j < w; j++)
                   if ((R[i*w + j-1] != R[i*w + j]) || (G[i*w + j-1] != G[i*w + j]) || (B[i*w + j-1] != B[i*w + j]) || (R[i*(w-1) + j] != R[i*w + j]) || (G[i*(w-1) + j] != G[i*w + j]) || (B[i*(w-1) + j] != B[i*w + j]))
                   {
-                        R[i*w + j] = 255;
-                        G[i*w + j] = 255;
-                        B[i*w + j] = 255;
+                        R[i*w + j] = 0;
+                        G[i*w + j] = 0;
+                        B[i*w + j] = 0;
                   }
-                  else R[i*w + j] = G[i*w + j] = B[i*w + j] = 0;
+                  else R[i*w + j] = G[i*w + j] = B[i*w + j] = 255;
 };
 //==============================================================================
 
@@ -203,8 +203,16 @@ void coefficientTempMainf(int j, double y)
 
 void definColorPixel(int i, double z)
 {
+      if (z == 0)
+      {
+                  R[i] = 0;
+                  G[i] = 0;
+                  B[i] = 0;
+      }
+      /*
       for (int j = 0; j < countPointInterval-1; j++)
       {
+
             if ((pointInterval[j] <= z) && (z <= pointInterval[j+1]))
             {
                   R[i] = red[j];
@@ -212,6 +220,7 @@ void definColorPixel(int i, double z)
                   B[i] = blue[j];
             }
       }
+      */
 };
 //==============================================================================
 

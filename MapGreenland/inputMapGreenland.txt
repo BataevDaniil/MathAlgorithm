@@ -8,7 +8,7 @@ nodeXCount= 83
 nodeYCount= 141
 
 Автомотически_задавать_интервал?
-autoSetInterval= 1
+autoSetInterval= 0
 
 Количество_уровней_по_высоте_(<=20)
 n= 12

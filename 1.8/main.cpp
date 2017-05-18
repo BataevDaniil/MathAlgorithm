@@ -48,7 +48,7 @@ int main()
                         {swap(matrix[i*N + j],   matrix[indexMaxLine * N  +  j]);}
                   swap(b[i],  b[indexMaxLine]);
             }
-            else if (matrix[i*indexMaxLine + i] == 0) {continue;}
+            else if (matrix[indexMaxLine*N + i] == 0) {continue;}
 //--------------------------------------------
             //складывает i строку с последующими за ней умножив i строку на cof
             for (int j = i+1; j < N; j++)
@@ -109,7 +109,7 @@ void faultCalculation()
       FILE *fp;
       fp = fopen ("matrix.txt", "r");
 //--------------------------------------------
-      ftrash (fp, 5);
+      ftrash (fp, 4);
       for (int i = 0; i < N*N; i++)
             {fscanf(fp, "%lf", &matrix[i]);}
 //--------------------------------------------
@@ -194,7 +194,7 @@ void fileRead()
       FILE *fp;
       fp = fopen ("matrix.txt", "r");
 //-----------------------------------------------------------------------------
-      ftrash (fp, 3);
+      ftrash (fp, 2);
       fscanf(fp, "%d", &N);
 //--------------------------------------------
       matrix = new double[N*N];

@@ -7,6 +7,7 @@
 double a, b, c, d;
 int *red, *green, *blue;
 
+int autoSetColorIntervalYesNo;
 int countPointInterval;
 double *pointInterval;
 
@@ -25,12 +26,14 @@ int numberDay;
 //==============================================================================
 void ftrash( FILE *fp, int n );
 void grideInNodeXY();
+void lineLevel();
 
 void fileRead();
 void readTemp();
 void writeTerminal();
 
 void fillNodeXYZ();
+void autoSetColorInterval();
 
 void drawTempMap();
 
@@ -53,9 +56,36 @@ int main()
       c = 0;
       d = nodeYCount-1;
 
+      autoSetColorInterval();
+
       drawTempMap();
 
       //writeTerminal();
+};
+//==============================================================================
+
+void lineLevel()
+{
+      for (int i = 1; i < 2; i++)
+      {
+            for (int j = 1; j < 100; j++)
+            {
+                  int sum1 = (int)(R[i*w + j] + G[i*w + j] + B[i*w + j]);
+                  int sum2 = (int)(R[i*w + j-1] + G[i*w + j-1] + B[i*w + j-1]);
+                  int sum3 = (int)(R[(i-1)*w + j] + G[(i-1)*w + j] + B[(i-1)*w + j]);
+                  //if (((R[i*w + j-1] != R[i*w + j]) && (G[i*w + j-1] != G[i*w + j]) && (B[i*w + j-1] != B[i*w + j])) || ((R[i*(w-1) + j] != R[i*w + j]) && (G[i*(w-1) + j] != G[i*w + j]) && (B[i*(w-1) + j] != B[i*w + j])))
+                  if ((sum1 != sum2) || (sum1 != sum3))
+                  {
+                        R[i*w + j] = G[i*w + j] = B[i*w + j] = 0;
+                  }
+                  else R[i*w + j] = G[i*w + j] = B[i*w + j] = 255;
+
+                  printf("sum1 = %d  ", sum1);
+                  printf("sum2 = %d  ", sum2);
+                  printf("sum3 = %d\n", sum3);
+
+            }
+      }
 };
 //==============================================================================
 
@@ -95,7 +125,8 @@ void drawTempMap()
             }
       }
 
-      grideInNodeXY();
+      //grideInNodeXY();
+      lineLevel();
 //------------------------------------------------------------------------------
       CloseWindow("TempMapGreenland.bmp");
 };
@@ -324,28 +355,37 @@ void fileRead()
       ftrash (fp, 1);
       fscanf(fp, "%d", &nodeYCount);
 
+      ftrash (fp, 2);
+      fscanf(fp, "%d", &autoSetColorIntervalYesNo);
+
       nodeZCount = nodeYCount * nodeXCount;
 
       nodeZ = new double[nodeZCount];
       nodeX = new double[nodeXCount];
       nodeY = new double[nodeYCount];
 
-      pointInterval = new double[countPointInterval];
-
-      red = new int[countPointInterval-1];
-      green = new int[countPointInterval-1];
-      blue = new int [countPointInterval-1];
-
-      ftrash(fp, 1);
-      for (int i = 0; i < countPointInterval; i++)
-            {fscanf(fp, "%lf", &pointInterval[i]);}
-
-      ftrash(fp, 1);
-      for (int i = 0; i < countPointInterval-1; i++)
+      if (autoSetColorIntervalYesNo == 0)
       {
-            fscanf(fp, "%d", &red[i]);
-            fscanf(fp, "%d", &green[i]);
-            fscanf(fp, "%d", &blue[i]);
+            ftrash (fp, 2);
+            fscanf(fp, "%d", &countPointInterval);
+
+            pointInterval = new double[countPointInterval];
+
+            red = new int[countPointInterval-1];
+            green = new int[countPointInterval-1];
+            blue = new int [countPointInterval-1];
+
+            ftrash(fp, 1);
+            for (int i = 0; i < countPointInterval; i++)
+                  {fscanf(fp, "%lf", &pointInterval[i]);}
+
+            ftrash(fp, 1);
+            for (int i = 0; i < countPointInterval-1; i++)
+            {
+                  fscanf(fp, "%d", &red[i]);
+                  fscanf(fp, "%d", &green[i]);
+                  fscanf(fp, "%d", &blue[i]);
+            }
       }
 
       fclose(fp);
@@ -443,6 +483,51 @@ int location(double x, double y)
       //printf("i = %d\n", i);
 
       return i;
+};
+//==============================================================================
+
+void autoSetColorInterval()
+{
+      if (autoSetColorIntervalYesNo == 1)
+      {
+            double min = nodeZ[0];
+            double max = nodeZ[0];
+            for (int i = 1; i < nodeZCount; i++)
+            {
+                  if (min > nodeZ[i])
+                        min = nodeZ[i];
+
+                  if (max < nodeZ[i])
+                        max = nodeZ[i];
+            }
+
+            //printf("min = %lf\n", min);
+            //printf("max = %lf\n", max);
+
+            countPointInterval = 256;
+            double stepInterval = abs(max - min) / (countPointInterval - 1.);
+
+            //printf("stepInterval = %lf\n", stepInterval);
+
+            pointInterval = new double[countPointInterval];
+
+            pointInterval[0] = min;
+            for (int i = 1; i < countPointInterval; i++)
+            {
+                  pointInterval[i] = pointInterval[i-1] + stepInterval;
+            }
+
+            red = new int[countPointInterval-1];
+            green = new int[countPointInterval-1];
+            blue = new int [countPointInterval-1];
+
+            for (int i = 0; i < countPointInterval-1; i++)
+            {
+                  red[i] = 0;
+                  green[i] = i;
+                  blue[i] = 0;
+            }
+      }
 };
 //==============================================================================
 

@@ -146,8 +146,6 @@ void runInterac(double *matrix, double *b, double*x)
 
         rk = normal(matrix, b, x);
 
-        printf("rk = %lf\n", rk);
-
         if (interac < maxInterac)
         {
             SetColor(199,49,19);

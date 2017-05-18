@@ -65,10 +65,10 @@ double f(double x, double y)
 {
   //return x - y;
 
-  //#define sqr(x) (x)*(x)
-  //return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
+  #define sqr(x) (x)*(x)
+  return(x*x+2*sqr(3./5*pow(x*x,1./3)-y)-1);
 
-  return x*x+y*y;
+  //return x*x+y*y;
   //return x*x+y;
   //return x*x - y*y;
 };
