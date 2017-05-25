@@ -1,0 +1,9 @@
+Метод секущих 
+answer = 0.842739 
+fault = 0.000884 
+countInterac = 3 
+
+Метод деления отрезков пополам 
+answer = 0.844585 
+fault = 0.006603 
+countInterac = 1 
