@@ -5,7 +5,6 @@
 *~
 Graph.h
 ReadImage.h
-/task
-!/lib/Graph.h
-!/lib/ReadImage.h
-!/lib/input.bmp
+!/LibGraphDrobotenko/Graph.h
+!/LibGraphDrobotenko/ReadImage.h
+!/LibGraphDrobotenko/input.bmp

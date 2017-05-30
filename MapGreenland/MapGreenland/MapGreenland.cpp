@@ -22,7 +22,8 @@ int nodeZCount;
 double *ai, *bi, *ci, *di;
 double *aiTemp, *biTemp, *ciTemp, *diTemp;
 
-double distNodeXY;
+double distNodeX;
+double distNodeY;
 
 //==============================================================================
 void ftrash( FILE *fp, int n );
@@ -55,9 +56,9 @@ int main()
       autoSetColorInterval();
 
       a = 0;
-      b = distNodeXY * (nodeXCount-1);
+      b = distNodeX * (nodeXCount-1);
       c = 0;
-      d = distNodeXY * (nodeYCount-1);
+      d = distNodeY * (nodeYCount-1);
 
       drawMapGreenland();
 
@@ -67,15 +68,27 @@ int main()
 
 void lineLevel()
 {
-      for (int i = 1; i < h; i++)
-            for (int j = 1; j < w; j++)
-                  if ((R[i*w + j-1] != R[i*w + j]) || (G[i*w + j-1] != G[i*w + j]) || (B[i*w + j-1] != B[i*w + j]) || (R[i*(w-1) + j] != R[i*w + j]) || (G[i*(w-1) + j] != G[i*w + j]) || (B[i*(w-1) + j] != B[i*w + j]))
+      for (int i = 0; i < h-1; i++)
+      {
+            for (int j = 0; j < w-1; j++)
+            {
+                  //int r0 = R[i*w + j] + G[i*w + j] + B[i*w + j];
+                  //int r1 = R[i*w + j+1] + G[i*w + j+1] + B[i*w + j+1];
+                  //int r2 = R[(i+1)*w + j] + G[(i+1)*w + j] + B[(i+1)*w + j];
+                  //printf("B %d  ", B[i*w + j]);
+                  //printf("r0 = %d  ", r0);
+                  //printf("r1 = %d  ", r1);
+                  //printf("r2 = %d\n", r2);
+                  if ((R[i*w + j+1] != R[i*w + j]) || (G[i*w + j+1] != G[i*w + j]) || (B[i*w + j+1] != B[i*w + j]) || (R[(i+1)*w + j] != R[i*w + j]) || (G[(i+1)*w + j] != G[i*w + j]) || (B[(i+1)*w + j] != B[i*w + j]))
+                  //if ((r0 != r1) || (r0 != r2))
                   {
                         R[i*w + j] = 0;
                         G[i*w + j] = 0;
                         B[i*w + j] = 0;
                   }
                   else R[i*w + j] = G[i*w + j] = B[i*w + j] = 255;
+            }
+      }
 };
 //==============================================================================
 
@@ -87,9 +100,9 @@ void drawMapGreenland()
       coefficientMainf();
 
       double a = 0;
-      double b = distNodeXY * (nodeXCount-1);
+      double b = distNodeX * (nodeXCount-1);
       double c = 0;
-      double d = distNodeXY * (nodeYCount-1);
+      double d = distNodeY * (nodeYCount-1);
 
       double xStep = (b - a)/w;
       double yStep = (d - c)/h;
@@ -120,8 +133,8 @@ void drawMapGreenland()
             }
       }
 
+      lineLevel();
       //grideInNodeXY();
-      //lineLevel();
 //------------------------------------------------------------------------------
 
       CloseWindow("MapGreenland.bmp");
@@ -203,24 +216,16 @@ void coefficientTempMainf(int j, double y)
 
 void definColorPixel(int i, double z)
 {
-      if (z == 0)
-      {
-                  R[i] = 0;
-                  G[i] = 0;
-                  B[i] = 0;
-      }
-      /*
       for (int j = 0; j < countPointInterval-1; j++)
       {
-
             if ((pointInterval[j] <= z) && (z <= pointInterval[j+1]))
             {
                   R[i] = red[j];
                   G[i] = green[j];
                   B[i] = blue[j];
+                  break;
             }
       }
-      */
 };
 //==============================================================================
 
@@ -315,12 +320,12 @@ void fillNodeXYZ()
 
       for (int i = 0; i < nodeXCount; i++)
       {
-            nodeX[i] = distNodeXY* i;
+            nodeX[i] = distNodeX* i;
       }
 
       for (int i = 0; i < nodeYCount; i++)
       {
-            nodeY[i] = distNodeXY * i;
+            nodeY[i] = distNodeY * i;
       }
 };
 //==============================================================================
@@ -347,7 +352,10 @@ void fileRead()
       fp = fopen ("inputMapGreenland.txt", "r");
 
       ftrash (fp, 3);
-      fscanf(fp, "%lf", &distNodeXY);
+      fscanf(fp, "%lf", &distNodeX);
+
+      ftrash (fp, 1);
+      fscanf(fp, "%lf", &distNodeY);
 
       ftrash (fp, 2);
       fscanf(fp, "%d", &nodeXCount);
@@ -440,6 +448,10 @@ void autoSetColorInterval()
 void writeTerminal()
 {
       printf("\n");
+      printf("distNodeX = %lf\n", distNodeX);
+      printf("distNodeY = %lf\n", distNodeY);
+
+      printf("\n");
       printf("countPointInterval = %d\n", countPointInterval);
       printf("nodeXCount = %d\n", nodeXCount);
       printf("nodeYCount = %d\n", nodeYCount);
@@ -449,6 +461,12 @@ void writeTerminal()
       for (int i = 0; i < countPointInterval; i++)
             {printf("%3.2lf  ", pointInterval[i]);}
       printf("\n");
+
+/*
+      #define indexI 1
+      #define indexJ 1
+      printf("nodeZ[%d][%d] = %5.6lf\n", indexI, indexJ, nodeZ[indexI*nodeXCount + indexJ]);
+*/
 
 /*
       printf("\n");

@@ -126,7 +126,7 @@ void drawTempMap()
       }
 
       //grideInNodeXY();
-      lineLevel();
+      //lineLevel();
 //------------------------------------------------------------------------------
       CloseWindow("TempMapGreenland.bmp");
 };
